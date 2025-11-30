@@ -56,16 +56,9 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/lorekeeper.css') }}" rel="stylesheet">
 
-    {{-- Font Awesome --}}
     <link href="{{ asset('css/all.min.css') }}" rel="stylesheet">
-
-    {{-- jQuery UI --}}
     <link href="{{ asset('css/jquery-ui.min.css') }}" rel="stylesheet">
-
-    {{-- Bootstrap Toggle --}}
     <link href="{{ asset('css/bootstrap4-toggle.min.css') }}" rel="stylesheet">
-
-
     <link href="{{ asset('css/lightbox.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/bootstrap-colorpicker.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/jquery-ui-timepicker-addon.css') }}" rel="stylesheet">
@@ -79,11 +72,17 @@
 </head>
 <body>
     <div id="app">
-        <div class="site-header-image" id="header" style="background-image: url('{{ asset('images/header.png') }}');"></div>
+        <!-- WORLD CLOCK BAR -->
+        <div class="site-header-image" id="header" style="background-image: url('{{ asset('images/header.png') }}');">
+            <div id="world-time-bar" class="text-center small">
+                ────────── ✦ <span id="world-time-text">World Time: --:--:-- ✦ --- ✦ -- ----</span> ✦ ──────────
+            </div>
+        </div>
+
         @include('layouts._nav')
         @if ( View::hasSection('sidebar') )
-			<div class="site-mobile-header bg-secondary"><a href="#" class="btn btn-sm btn-outline-light" id="mobileMenuButton">Menu <i class="fas fa-caret-right ml-1"></i></a></div>
-		@endif
+            <div class="site-mobile-header bg-secondary"><a href="#" class="btn btn-sm btn-outline-light" id="mobileMenuButton">Menu <i class="fas fa-caret-right ml-1"></i></a></div>
+        @endif
 
         <main class="container-fluid">
             <div class="row">
@@ -91,6 +90,7 @@
                 <div class="sidebar col-lg-2" id="sidebar">
                     @yield('sidebar')
                 </div>
+
                 <div class="main-content col-lg-8 p-4">
                     <div>
                         @if(Auth::check() && !Config::get('lorekeeper.extensions.navbar_news_notif'))
@@ -106,13 +106,11 @@
                     </div>
 
                     <div class="site-footer mt-4" id="footer">
-                            @include('layouts._footer')
+                        @include('layouts._footer')
                     </div>
                 </div>
             </div>
-
         </main>
-
 
         <div class="modal fade" id="modal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
@@ -121,17 +119,18 @@
                         <span class="modal-title h5 mb-0"></span>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
-                    <div class="modal-body">
-                    </div>
+                    <div class="modal-body"></div>
                 </div>
             </div>
         </div>
 
         @yield('scripts')
+
         <script>
             $(function() {
                 $('[data-toggle="tooltip"]').tooltip({html: true});
                 $('.cp').colorpicker();
+
                 tinymce.init({
                     selector: '.wysiwyg',
                     height: 500,
@@ -150,6 +149,8 @@
                     spoiler_caption: 'Toggle Spoiler',
                     target_list: false
                 });
+
+                // Mobile menu
                 var $mobileMenuButton = $('#mobileMenuButton');
                 var $sidebar = $('#sidebar');
                 $('#mobileMenuButton').on('click', function(e) {
@@ -157,16 +158,63 @@
                     $sidebar.toggleClass('active');
                 });
 
-                $('.inventory-log-stack').on('click', function(e) {
-                    e.preventDefault();
-                    loadModal("{{ url('items') }}/" + $(this).data('id') + "?read_only=1", $(this).data('name'));
+                // Spoilers
+                $('.spoiler-text').hide();
+                $('.spoiler-toggle').click(function(){
+                    $(this).next().toggle();
                 });
 
-                $('.spoiler-text').hide();
-                    $('.spoiler-toggle').click(function(){
-                        $(this).next().toggle();
-                    });
-                });
+                // ======================
+                // WORLD TIME WITH SECONDS
+                // ======================
+                function updateWorldTime() {
+                    var el = document.getElementById('world-time-text');
+                    if (!el) return;
+
+                    var now = new Date();
+
+                    var hours = now.getHours().toString().padStart(2, '0');
+                    var minutes = now.getMinutes().toString().padStart(2, '0');
+                    var seconds = now.getSeconds().toString().padStart(2, '0');
+
+                    var day = now.getDate();
+                    var monthIndex = now.getMonth();
+
+                    var monthNames = [
+                        'January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'
+                    ];
+
+                    // Seasons
+                    var season;
+                    if (monthIndex === 11 || monthIndex === 0 || monthIndex === 1) season = '❄️ Winter';
+                    else if (monthIndex >= 2 && monthIndex <= 4) season = '🌸 Spring';
+                    else if (monthIndex >= 5 && monthIndex <= 7) season = '☀️ Summer';
+                    else season = '🍂 Autumn';
+
+                    var monthName = monthNames[monthIndex];
+
+                    // Final format
+                    var text = '🕒 ' + hours + ':' + minutes + ':' + seconds +
+                               ' | ' + season + ' | 📅 ' + day + ' ' + monthName;
+
+                    el.textContent = text;
+                }
+
+                function syncWorldClock() {
+                    updateWorldTime();
+
+                    var now = new Date();
+                    var msUntilNextSecond = 1000 - now.getMilliseconds();
+
+                    setTimeout(function() {
+                        updateWorldTime();
+                        setInterval(updateWorldTime, 1000);
+                    }, msUntilNextSecond);
+                }
+
+                syncWorldClock();
+            });
         </script>
     </div>
 </body>

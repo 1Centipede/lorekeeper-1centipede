@@ -298,6 +298,52 @@ main > .row {
 
 /**************************************************************************************************
     
+    World time bar
+    
+**************************************************************************************************/
+
+.site-header-image {
+    position: relative;
+    background-repeat: repeat;
+    min-height: 200px;
+}
+
+#world-time-bar {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    max-width: 700px;
+    padding: 9px 10px;
+
+    text-align: center;
+    background: rgba(0, 0, 0, 0.55);
+    color: #f5f5f5;
+    font-family: "Roboto Condensed", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.8rem;
+
+    z-index: 6;
+}
+
+#world-time-bar span#world-time-text {
+    white-space: nowrap;
+}
+
+/* Mobile tweaks */
+@media (max-width: 767px) {
+    #world-time-bar {
+        bottom: -6px;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        padding: 3px 8px;
+    }
+}
+
+/**************************************************************************************************
+    
     Content
     
 **************************************************************************************************/
